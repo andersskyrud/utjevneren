@@ -13,6 +13,9 @@ pacman::p_load(
   shiny
 )
 
+# Sett norsk encoding 
+Sys.setlocale("LC_ALL", "no_NO.UTF-8")
+
 # Source modular scripts
 source("R/ui_national.R")    # UI for the national tab
 source("R/ui_districts.R")   # UI for the district tabs

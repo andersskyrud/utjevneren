@@ -1,0 +1,181 @@
+"Nivå","Region","Parti","Prosent","Usikkerhet"
+"Nasjonalt","Nasjonalt","Arbeiderpartiet",26.3,1.578
+"Nasjonalt","Nasjonalt","Høyre",20.4,1.224
+"Nasjonalt","Nasjonalt","Senterpartiet",13.5,0.81
+"Nasjonalt","Nasjonalt","Fremskrittspartiet",11.6,0.696
+"Nasjonalt","Nasjonalt","Sosialistisk_Venstreparti",7.6,0.5
+"Nasjonalt","Nasjonalt","Rødt",4.7,0.5
+"Nasjonalt","Nasjonalt","Venstre",4.6,0.5
+"Nasjonalt","Nasjonalt","Miljøpartiet_De_Grønne",3.9,0.5
+"Nasjonalt","Nasjonalt","Kristelig_Folkeparti",3.8,0.5
+"Distrikt","Aust-Agder","Arbeiderpartiet",24.5,1.469118
+"Distrikt","Aust-Agder","Høyre",20.2,1.211904
+"Distrikt","Aust-Agder","Senterpartiet",26.3,1.578
+"Distrikt","Aust-Agder","Fremskrittspartiet",30.4,1.82259
+"Distrikt","Aust-Agder","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Aust-Agder","Rødt",20.7,1.241886
+"Distrikt","Aust-Agder","Venstre",18.3,1.098288
+"Distrikt","Aust-Agder","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Aust-Agder","Kristelig_Folkeparti",0,0.5
+"Distrikt","Vest-Agder","Arbeiderpartiet",20.8,1.249776
+"Distrikt","Vest-Agder","Høyre",21.3,1.275024
+"Distrikt","Vest-Agder","Senterpartiet",20.1,1.204014
+"Distrikt","Vest-Agder","Fremskrittspartiet",29.7,1.781562
+"Distrikt","Vest-Agder","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Vest-Agder","Rødt",17.9,1.07304
+"Distrikt","Vest-Agder","Venstre",20.6,1.235574
+"Distrikt","Vest-Agder","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Vest-Agder","Kristelig_Folkeparti",0,0.5
+"Distrikt","Akershus","Arbeiderpartiet",25.8,1.548018
+"Distrikt","Akershus","Høyre",35.3,2.119254
+"Distrikt","Akershus","Senterpartiet",17.1,1.028856
+"Distrikt","Akershus","Fremskrittspartiet",23.8,1.42809
+"Distrikt","Akershus","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Akershus","Rødt",21.8,1.30974
+"Distrikt","Akershus","Venstre",39.5,2.367
+"Distrikt","Akershus","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Akershus","Kristelig_Folkeparti",0,0.5
+"Distrikt","Buskerud","Arbeiderpartiet",28.4,1.70424
+"Distrikt","Buskerud","Høyre",28.4,1.701084
+"Distrikt","Buskerud","Senterpartiet",31.4,1.882554
+"Distrikt","Buskerud","Fremskrittspartiet",27.7,1.660056
+"Distrikt","Buskerud","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Buskerud","Rødt",19.6,1.17561
+"Distrikt","Buskerud","Venstre",20.6,1.235574
+"Distrikt","Buskerud","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Buskerud","Kristelig_Folkeparti",0,0.5
+"Distrikt","Finnmark","Arbeiderpartiet",31.4,1.884132
+"Distrikt","Finnmark","Høyre",8.8,0.525474
+"Distrikt","Finnmark","Senterpartiet",35.8,2.150814
+"Distrikt","Finnmark","Fremskrittspartiet",24.5,1.469118
+"Distrikt","Finnmark","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Finnmark","Rødt",28,1.678992
+"Distrikt","Finnmark","Venstre",8,0.5
+"Distrikt","Finnmark","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Finnmark","Kristelig_Folkeparti",0,0.5
+"Distrikt","Hedmark","Arbeiderpartiet",33.1,1.985124
+"Distrikt","Hedmark","Høyre",13.6,0.818982
+"Distrikt","Hedmark","Senterpartiet",54.5,2.727228
+"Distrikt","Hedmark","Fremskrittspartiet",19,1.142472
+"Distrikt","Hedmark","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Hedmark","Rødt",19,1.140894
+"Distrikt","Hedmark","Venstre",13.2,0.789
+"Distrikt","Hedmark","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Hedmark","Kristelig_Folkeparti",0,0.5
+"Distrikt","Hordaland","Arbeiderpartiet",22.7,1.361814
+"Distrikt","Hordaland","Høyre",31.6,1.895178
+"Distrikt","Hordaland","Senterpartiet",19.3,1.156674
+"Distrikt","Hordaland","Fremskrittspartiet",28.6,1.713708
+"Distrikt","Hordaland","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Hordaland","Rødt",26.3,1.578
+"Distrikt","Hordaland","Venstre",24.6,1.47543
+"Distrikt","Hordaland","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Hordaland","Kristelig_Folkeparti",0,0.5
+"Distrikt","Møre og Romsdal","Arbeiderpartiet",20.2,1.213482
+"Distrikt","Møre og Romsdal","Høyre",21,1.260822
+"Distrikt","Møre og Romsdal","Senterpartiet",34.1,2.045088
+"Distrikt","Møre og Romsdal","Fremskrittspartiet",50.1,2.99391
+"Distrikt","Møre og Romsdal","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Møre og Romsdal","Rødt",18.5,1.107756
+"Distrikt","Møre og Romsdal","Venstre",16.6,0.99414
+"Distrikt","Møre og Romsdal","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Møre og Romsdal","Kristelig_Folkeparti",0,0.5
+"Distrikt","Nordland","Arbeiderpartiet",28.8,1.729488
+"Distrikt","Nordland","Høyre",19.7,1.1835
+"Distrikt","Nordland","Senterpartiet",41.3,2.47746
+"Distrikt","Nordland","Fremskrittspartiet",27.7,1.660056
+"Distrikt","Nordland","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Nordland","Rødt",30.2,1.813122
+"Distrikt","Nordland","Venstre",14.3,0.856854
+"Distrikt","Nordland","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Nordland","Kristelig_Folkeparti",0,0.5
+"Distrikt","Oppland","Arbeiderpartiet",35,2.09874
+"Distrikt","Oppland","Høyre",16.1,0.965736
+"Distrikt","Oppland","Senterpartiet",55.9,2.645172
+"Distrikt","Oppland","Fremskrittspartiet",16.8,1.005186
+"Distrikt","Oppland","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Oppland","Rødt",20.1,1.208748
+"Distrikt","Oppland","Venstre",13.7,0.823716
+"Distrikt","Oppland","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Oppland","Kristelig_Folkeparti",0,0.5
+"Distrikt","Oslo","Arbeiderpartiet",23,1.379172
+"Distrikt","Oslo","Høyre",30.3,1.817856
+"Distrikt","Oslo","Senterpartiet",6,0.5
+"Distrikt","Oslo","Fremskrittspartiet",13.6,0.815826
+"Distrikt","Oslo","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Oslo","Rødt",46.4,2.786748
+"Distrikt","Oslo","Venstre",57.2,2.569428
+"Distrikt","Oslo","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Oslo","Kristelig_Folkeparti",0,0.5
+"Distrikt","Rogaland","Arbeiderpartiet",22.4,1.344456
+"Distrikt","Rogaland","Høyre",30.8,1.849416
+"Distrikt","Rogaland","Senterpartiet",20.3,1.216638
+"Distrikt","Rogaland","Fremskrittspartiet",38.1,2.284944
+"Distrikt","Rogaland","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Rogaland","Rødt",20.7,1.241886
+"Distrikt","Rogaland","Venstre",20,1.200858
+"Distrikt","Rogaland","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Rogaland","Kristelig_Folkeparti",0,0.5
+"Distrikt","Sogn og Fjordane","Arbeiderpartiet",26.5,1.590624
+"Distrikt","Sogn og Fjordane","Høyre",17.6,1.058838
+"Distrikt","Sogn og Fjordane","Senterpartiet",27.8,1.667946
+"Distrikt","Sogn og Fjordane","Fremskrittspartiet",18.1,1.087242
+"Distrikt","Sogn og Fjordane","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Sogn og Fjordane","Rødt",22.4,1.342878
+"Distrikt","Sogn og Fjordane","Venstre",19.4,1.166142
+"Distrikt","Sogn og Fjordane","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Sogn og Fjordane","Kristelig_Folkeparti",0,0.5
+"Distrikt","Telemark","Arbeiderpartiet",30.8,1.847838
+"Distrikt","Telemark","Høyre",20.2,1.213482
+"Distrikt","Telemark","Senterpartiet",32.1,1.928316
+"Distrikt","Telemark","Fremskrittspartiet",28.8,1.72791
+"Distrikt","Telemark","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Telemark","Rødt",25.7,1.543284
+"Distrikt","Telemark","Venstre",13.2,0.789
+"Distrikt","Telemark","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Telemark","Kristelig_Folkeparti",0,0.5
+"Distrikt","Troms","Arbeiderpartiet",27.1,1.626918
+"Distrikt","Troms","Høyre",17.4,1.044636
+"Distrikt","Troms","Senterpartiet",37.2,2.23287
+"Distrikt","Troms","Fremskrittspartiet",31.7,1.904646
+"Distrikt","Troms","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Troms","Rødt",26.9,1.611138
+"Distrikt","Troms","Venstre",14.3,0.856854
+"Distrikt","Troms","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Troms","Kristelig_Folkeparti",0,0.5
+"Distrikt","Nord-Trøndelag","Arbeiderpartiet",33.6,2.015106
+"Distrikt","Nord-Trøndelag","Høyre",13.6,0.818982
+"Distrikt","Nord-Trøndelag","Senterpartiet",56.1,2.634126
+"Distrikt","Nord-Trøndelag","Fremskrittspartiet",18.1,1.08882
+"Distrikt","Nord-Trøndelag","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Nord-Trøndelag","Rødt",22.4,1.342878
+"Distrikt","Nord-Trøndelag","Venstre",11.4,0.68643
+"Distrikt","Nord-Trøndelag","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Nord-Trøndelag","Kristelig_Folkeparti",0,0.5
+"Distrikt","Sør-Trøndelag","Arbeiderpartiet",29.8,1.787874
+"Distrikt","Sør-Trøndelag","Høyre",21.3,1.275024
+"Distrikt","Sør-Trøndelag","Senterpartiet",29.4,1.765782
+"Distrikt","Sør-Trøndelag","Fremskrittspartiet",19.5,1.169298
+"Distrikt","Sør-Trøndelag","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Sør-Trøndelag","Rødt",23.5,1.410732
+"Distrikt","Sør-Trøndelag","Venstre",25.2,1.510146
+"Distrikt","Sør-Trøndelag","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Sør-Trøndelag","Kristelig_Folkeparti",0,0.5
+"Distrikt","Vestfold","Arbeiderpartiet",27,1.620606
+"Distrikt","Vestfold","Høyre",32.3,1.94094
+"Distrikt","Vestfold","Senterpartiet",19.3,1.156674
+"Distrikt","Vestfold","Fremskrittspartiet",22.2,1.33341
+"Distrikt","Vestfold","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Vestfold","Rødt",24.6,1.477008
+"Distrikt","Vestfold","Venstre",26.3,1.578
+"Distrikt","Vestfold","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Vestfold","Kristelig_Folkeparti",0,0.5
+"Distrikt","Østfold","Arbeiderpartiet",30.5,1.83048
+"Distrikt","Østfold","Høyre",24.1,1.445448
+"Distrikt","Østfold","Senterpartiet",27.5,1.647432
+"Distrikt","Østfold","Fremskrittspartiet",28.8,1.72791
+"Distrikt","Østfold","Sosialistisk_Venstreparti",0,0.5
+"Distrikt","Østfold","Rødt",25.7,1.543284
+"Distrikt","Østfold","Venstre",17.1,1.028856
+"Distrikt","Østfold","Miljøpartiet_De_Grønne",0,0.5
+"Distrikt","Østfold","Kristelig_Folkeparti",0,0.5
