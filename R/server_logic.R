@@ -8,11 +8,12 @@ server_logic <- function(input, output, session) {
       Høyre = 20.4,
       Senterpartiet = 13.5,
       Fremskrittspartiet = 11.6,
-      Sosialistisk_Venstreparti = 7.6,
+      SV = 7.6,
       Rødt = 4.7,
       Venstre = 4.6,
-      Miljøpartiet_De_Grønne = 3.9,
-      Kristelig_Folkeparti = 3.8
+      MDG = 3.9,
+      KrF = 3.8,
+      Andre = 3.0
     )
   )
   
