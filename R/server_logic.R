@@ -1,5 +1,8 @@
+options(shiny.fullstacktrace = TRUE)
+
 # Server-side logic
-server_logic <- function(input, output, session) {
+server_logic <- function(input, output, session) { 
+  
   # Reactive values for national inputs
   national_values <- reactiveValues(
     turnout = 77.2,
@@ -17,6 +20,55 @@ server_logic <- function(input, output, session) {
     )
   )
   
+  # Reactive value for district overrides
+  district_overrides <- reactiveValues()
+  
+  # Reactive value to track if overrides exist
+  override_flags <- reactiveValues()
+  
+  # Function to collect inputs for simulation or export
+  collect_inputs_with_overrides <- function(national_values, district_ratios, district_overrides, input) {
+    # Assemble national inputs
+    national_inputs <- data.frame(
+      Nivå = "Nasjonalt",
+      Region = "Nasjonalt",
+      Parti = names(national_values$party_percentages),
+      Prosent = unlist(lapply(names(national_values$party_percentages), function(party) {
+        input[[paste0("percentage_", gsub(" ", "_", party))]]
+      })),
+      Usikkerhet = unlist(lapply(names(national_values$party_percentages), function(party) {
+        input[[paste0("uncertainty_", gsub(" ", "_", party))]]
+      })),
+      stringsAsFactors = FALSE
+    )
+    
+    # Assemble district inputs
+    district_inputs <- do.call(rbind, lapply(seq_len(nrow(district_ratios)), function(i) {
+      district <- district_ratios$District[i]
+      data.frame(
+        Nivå = "Distrikt",
+        Region = district,
+        Parti = names(national_values$party_percentages),
+        Prosent = sapply(names(national_values$party_percentages), function(party) {
+          input[[paste0(gsub(" ", "_", party), "_", gsub(" ", "_", district))]]
+        }),
+        Usikkerhet = sapply(names(national_values$party_percentages), function(party) {
+          input[[paste0("uncertainty_", gsub(" ", "_", party), "_", gsub(" ", "_", district))]]
+        }),
+        stringsAsFactors = FALSE
+      )
+    }))
+    
+    # Combine national and district inputs
+    full_data <- rbind(national_inputs, district_inputs)
+    
+    # Debugging: Print collected data
+    cat("\n--- Debugging: Collected Inputs ---\n")
+    print(head(full_data))
+    
+    return(full_data)
+  }
+  
   # Parse uploaded CSV and update inputs
   observeEvent(input$upload_csv, {
     req(input$upload_csv)
@@ -26,71 +78,90 @@ server_logic <- function(input, output, session) {
     
     # Update national inputs
     national_row <- csv_data[csv_data$Nivå == "Nasjonalt", ]
-    updateSliderInput(session, "turnout", value = national_row$Prosent[national_row$Region == "Nasjonalt"])
+    updateSliderInput(session, "turnout", value = na.omit(national_row$Prosent[national_row$Region == "Nasjonalt"])[1])
     
     lapply(names(national_values$party_percentages), function(party) {
       updateNumericInput(session, paste0("percentage_", gsub(" ", "_", party)), 
-                         value = national_row$Prosent[national_row$Parti == party])
+                         value = na.omit(national_row$Prosent[national_row$Parti == party])[1])
       updateNumericInput(session, paste0("uncertainty_", gsub(" ", "_", party)), 
-                         value = national_row$Usikkerhet[national_row$Parti == party])
+                         value = na.omit(national_row$Usikkerhet[national_row$Parti == party])[1])
     })
+    
+    # Reset district overrides
+    district_overrides$data <- list()
+    override_flags$data <- list()
     
     # Update district inputs
     district_rows <- csv_data[csv_data$Nivå == "Distrikt", ]
     for (district in unique(district_rows$Region)) {
-      district_data <- district_rows[district_rows$Region == district, ]
+      district_subset <- district_rows[district_rows$Region == district, ]
       lapply(names(national_values$party_percentages), function(party) {
         updateNumericInput(session, paste0(gsub(" ", "_", party), "_", gsub(" ", "_", district)),
-                           value = district_data$Prosent[district_data$Parti == party])
+                           value = na.omit(district_subset$Prosent[district_subset$Parti == party])[1])
         updateNumericInput(session, paste0("uncertainty_", gsub(" ", "_", party), "_", gsub(" ", "_", district)),
-                           value = district_data$Usikkerhet[district_data$Parti == party])
+                           value = na.omit(district_subset$Usikkerhet[district_subset$Parti == party])[1])
       })
     }
   })
   
-  # Automatically update uncertainties for national inputs
+  # Automatically update district values when national inputs change
   observe({
-    lapply(names(national_values$party_percentages), function(party) {
-      percentage_id <- paste0("percentage_", party)
-      uncertainty_id <- paste0("uncertainty_", party)
+    if (is.null(district_ratios) || nrow(district_ratios) == 0) {
+      return()
+    }
+    
+    lapply(seq_len(nrow(district_ratios)), function(i) {
+      district <- district_ratios$District[i]
       
-      percentage <- input[[percentage_id]]
-      if (!is.null(percentage)) {
-        # Calculate and update uncertainty
-        uncertainty <- max(0.5, 3 * (1 - abs(percentage - 50) / 50))
-        updateNumericInput(session, uncertainty_id, value = round(uncertainty, 1))
+      # Validate district and turnout_ratio
+      if (is.null(district) || district == "") {
+        return()
       }
+      
+      turnout_ratio <- district_ratios$turnout_ratio[i]
+      if (is.null(turnout_ratio) || is.na(turnout_ratio)) {
+        return()
+      }
+      
+      district_flag <- override_flags$data[[district]]
+      
+      # Skip if district has a manual override
+      if (!is.null(district_flag) && district_flag) {
+        return()
+      }
+      
+      # Update turnout slider
+      turnout_value <- round(input$turnout * turnout_ratio, 1)
+      updateSliderInput(session, paste0("turnout_", gsub(" ", "_", district)), value = turnout_value)
+      
+      # Update party percentages and uncertainties
+      lapply(names(national_values$party_percentages), function(party) {
+        ratio <- district_ratios[[party]][i]
+        national_percentage <- input[[paste0("percentage_", gsub(" ", "_", party))]]
+        
+        if (is.null(ratio) || is.na(ratio) || is.null(national_percentage)) {
+          return()
+        }
+        
+        updated_percentage <- round(national_percentage * ratio, 1)
+        updated_uncertainty <- max(0.5, 3 * (1 - abs(updated_percentage - 50) / 50))
+        
+        updateNumericInput(session, paste0(gsub(" ", "_", party), "_", gsub(" ", "_", district)), value = updated_percentage)
+        updateNumericInput(session, paste0("uncertainty_", gsub(" ", "_", party), "_", gsub(" ", "_", district)), value = updated_uncertainty)
+      })
     })
   })
   
-  # Automatically update district values based on national inputs
-  observe({
-    for (i in 1:nrow(district_ratios)) {
-      district <- district_ratios$district[i]
-      
-      # Update turnout for the district
-      updateSliderInput(
-        session,
-        inputId = paste0("turnout_", gsub(" ", "_", district)),
-        value = round(input$turnout * district_ratios$turnout_ratio[i], 1)
-      )
-      
-      # Update party percentages and uncertainties for each district
-      lapply(names(national_values$party_percentages), function(party) {
-        percentage_id <- paste0(gsub(" ", "_", party), "_", gsub(" ", "_", district))
-        uncertainty_id <- paste0("uncertainty_", gsub(" ", "_", party), "_", gsub(" ", "_", district))
-        
-        # Update percentage based on national input and district ratio
-        national_percentage <- input[[paste0("percentage_", gsub(" ", "_", party))]]
-        updated_percentage <- round(national_percentage * district_ratios[[party]][i], 1)
-        
-        updateNumericInput(session, inputId = percentage_id, value = updated_percentage)
-        
-        # Update uncertainty based on the updated percentage
-        updated_uncertainty <- max(0.5, 3 * (1 - abs(updated_percentage - 50) / 50))
-        updateNumericInput(session, inputId = uncertainty_id, value = round(updated_uncertainty, 1))
-      })
-    }
+  # Run simulation on button click
+  observeEvent(input$run_simulation, {
+    full_data <- collect_inputs_with_overrides(national_values, district_ratios, district_overrides$data, input)
+    district_inputs <- full_data[full_data$Nivå == "Distrikt", ]
+    
+    cat("\n--- Debugging: Data for Simulation ---\n")
+    print(head(district_inputs))
+    
+    results <- simulate_election(district_inputs, num_simulations = 1000)
+    simulation_results(results)
   })
   
   # Export current inputs to CSV
@@ -99,45 +170,7 @@ server_logic <- function(input, output, session) {
       paste("utjevneren_innstillinger-", Sys.Date(), ".csv", sep = "")
     },
     content = function(file) {
-      # Collect national data
-      national_data <- data.frame(
-        Nivå = "Nasjonalt",
-        Region = "Nasjonalt",
-        Parti = names(national_values$party_percentages),
-        Prosent = sapply(names(national_values$party_percentages), function(party) {
-          val <- input[[paste0("percentage_", party)]]
-          if (is.null(val)) 0 else val
-        }),
-        Usikkerhet = sapply(names(national_values$party_percentages), function(party) {
-          val <- input[[paste0("uncertainty_", party)]]
-          if (is.null(val)) 0.5 else val
-        }),
-        stringsAsFactors = FALSE
-      )
-      
-      # Collect district data
-      district_data <- do.call(rbind, lapply(1:nrow(district_ratios), function(i) {
-        district <- district_ratios$district[i]
-        data.frame(
-          Nivå = "Distrikt",
-          Region = district,
-          Parti = names(national_values$party_percentages),
-          Prosent = sapply(names(national_values$party_percentages), function(party) {
-            val <- input[[paste0(gsub(" ", "_", party), "_", gsub(" ", "_", district))]]
-            if (is.null(val)) 0 else val
-          }),
-          Usikkerhet = sapply(names(national_values$party_percentages), function(party) {
-            val <- input[[paste0("uncertainty_", gsub(" ", "_", party), "_", gsub(" ", "_", district))]]
-            if (is.null(val)) 0.5 else val
-          }),
-          stringsAsFactors = FALSE
-        )
-      }))
-      
-      # Combine national and district data
-      full_data <- rbind(national_data, district_data)
-      
-      # Write to CSV
+      full_data <- collect_inputs_with_overrides(national_values, district_ratios, district_overrides$data, input)
       write.csv(full_data, file, row.names = FALSE, fileEncoding = "UTF-8")
     }
   )

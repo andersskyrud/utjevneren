@@ -12,8 +12,17 @@ party_names <- c(
   "Andre"
 )
 
+# Load input data function
+load_input_data <- function(file_path) {
+  read.csv(file_path, stringsAsFactors = FALSE, fileEncoding = "UTF-8")
+}
+
+# Load district ratios from CSV
+ratio_file <- "data/district_ratios.csv"
+district_ratios <- load_input_data(ratio_file)
+
 district_ui <- lapply(1:nrow(district_ratios), function(i) {
-  district <- district_ratios$district[i]
+  district <- district_ratios$District[i]
   
   tabPanel(
     district,

@@ -73,11 +73,24 @@ national_ui <- tabPanel(
       downloadButton(
         outputId = "download_csv",
         label = "Eksporter til CSV"
+      ),
+      
+      # Run Simulation Button
+      actionButton(
+        inputId = "run_simulation",
+        label = "Kjør simulering"
       )
     ),
     mainPanel(
       h3("Resultater"),
-      p("Her kommer det resultater.")
+      p("Her kommer det resultater."),
+      
+      # Placeholder for simulation results
+      div(
+        h4("Simuleringsresultater"),
+        tableOutput("simulation_table"),  # Table for results
+        plotOutput("simulation_histogram")  # Histogram for results
+      )
     )
   )
 )

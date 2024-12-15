@@ -7,46 +7,39 @@ library(dplyr)
 
 # Load the CSV File
 load_input_data <- function(file_path) {
-  read.csv(file_path, stringsAsFactors = FALSE, encoding = "UTF-8")
+  read.csv(file_path, stringsAsFactors = FALSE, fileEncoding = "UTF-8")
 }
 
 # Parse Input Data
-prepare_input_data <- function(input_data) {
-  # National data
-  national_data <- input_data %>%
-    filter(Nivå == "Nasjonalt") %>%
-    select(Parti, Prosent) %>%
-    mutate(Votes = round(Prosent * 1000))  # Scale percentages to votes
+prepare_input_data <- function(input_data, district_data) {
+  # Normalize region names
+  input_data$Region <- trimws(tolower(input_data$Region))
+  district_data$Valgdistrikt <- trimws(tolower(district_data$Valgdistrikt))
   
-  # Calculate "Andre" for national data
-  andre_percentage <- 100 - sum(national_data$Prosent, na.rm = TRUE)
-  national_data <- rbind(
-    national_data,
-    data.frame(Parti = "Andre", Prosent = andre_percentage, Votes = round(andre_percentage * 1000))
-  )
+  # Verify all regions match and handle any discrepancies
+  missing_regions <- setdiff(unique(input_data$Region), district_data$Valgdistrikt)
+  if (length(missing_regions) > 0) {
+    stop(paste("Error: Missing seat mapping for the following regions:", paste(missing_regions, collapse = ", ")))
+  }
   
-  # District data
-  district_data <- input_data %>%
-    filter(Nivå == "Distrikt") %>%
-    select(Region, Parti, Prosent) %>%
-    group_by(Region) %>%
-    mutate(Votes = round(Prosent * 1000)) %>%  # Scale percentages to votes
-    ungroup()
+  # Reorder district_data to match input_data regions
+  district_data <- district_data[match(unique(input_data$Region), district_data$Valgdistrikt), ]
   
-  # Calculate "Andre" for district data
-  andre_district_data <- district_data %>%
-    group_by(Region) %>%
-    summarise(Prosent = 100 - sum(Prosent, na.rm = TRUE)) %>%
-    mutate(Parti = "Andre", Votes = round(Prosent * 1000))
-  
-  district_data <- bind_rows(district_data, andre_district_data) %>%
+  # Scale percentages to votes using electorate size
+  district_input <- input_data %>%
+    left_join(district_data, by = c("Region" = "Valgdistrikt")) %>%
+    mutate(Votes = round(Prosent * Elektorat)) %>%
     arrange(Region, Parti)
   
-  return(list(national = national_data, district = district_data))
+  return(list(district = district_input))
 }
 
-# Sainte-Laguë Allocation Function
+# Sainte-Laguë allocation
 allocate_seats <- function(votes, total_seats) {
+  if (length(total_seats) != 1 || total_seats <= 0) stop("Total seats must be a single positive integer.")
+  
+  andre_index <- which(names(votes) == "Andre")
+  
   results <- data.frame(
     Party = names(votes),
     Votes = votes,
@@ -57,106 +50,196 @@ allocate_seats <- function(votes, total_seats) {
   
   for (i in seq_len(total_seats)) {
     max_row <- which.max(results$Quotient)
+    
+    if (length(andre_index) > 0 && max_row == andre_index) {
+      results$Quotient[max_row] <- -Inf
+      next
+    }
+    
     results$Seats[max_row] <- results$Seats[max_row] + 1
-    results$Divisor[max_row] <- results$Divisor[max_row] + 2
+    results$Divisor[max_row] <- ifelse(
+      results$Seats[max_row] == 1,
+      3,
+      2 * results$Seats[max_row] - 1
+    )
     results$Quotient[max_row] <- results$Votes[max_row] / results$Divisor[max_row]
   }
   
   return(results)
 }
 
-# Leveling Seats Allocation
+# Allocate Leveling Seats
 allocate_leveling_seats <- function(district_votes, national_votes, district_seats, total_leveling_seats) {
-  # Exclude "Andre" from national_votes and compute eligibility
-  national_votes <- national_votes[names(national_votes) != "Andre"]
-  total_votes <- sum(unlist(national_votes), na.rm = TRUE)
-  eligible_parties <- names(national_votes[national_votes / total_votes >= 0.04])  # Parties above 4% threshold
+  cat("\n--- Debugging: allocate_leveling_seats ---\n")
   
-  # National seat allocation
-  national_seat_allocation <- allocate_seats(national_votes[eligible_parties], 169)
+  # Step 1: Exclude parties under the 4% threshold
+  total_votes <- sum(unlist(national_votes))
+  eligible_parties <- names(national_votes[national_votes / total_votes >= 0.04])
   
-  # District seat allocation
-  actual_district_seats <- Reduce("+", lapply(names(district_votes), function(region) {
-    allocate_seats(district_votes[[region]], district_seats[[region]])$Seats
+  if (length(eligible_parties) == 0) {
+    stop("Error: No eligible parties above 4% threshold.")
+  }
+  
+  cat("Eligible Parties:\n")
+  print(eligible_parties)
+  
+  # Filter national votes for eligible parties
+  eligible_national_votes <- national_votes[eligible_parties]
+  
+  # Step 2: Ideal National Allocation
+  national_seat_allocation <- allocate_seats(eligible_national_votes, 169)
+  cat("Ideal National Allocation:\n")
+  print(national_seat_allocation)
+  
+  # Step 3: Calculate Actual District Seats
+  actual_district_seats <- calculate_actual_district_seats(district_votes, district_seats, eligible_parties)
+  cat("Actual District Seats:\n")
+  print(actual_district_seats)
+  
+  # Step 4: Calculate Leveling Seats Needed
+  leveling_seats_needed <- calculate_leveling_seats_needed(national_seat_allocation, actual_district_seats)
+  cat("Leveling Seats Needed:\n")
+  print(leveling_seats_needed)
+  
+  # Step 5: Allocate Leveling Seats Iteratively
+  leveling_seat_allocations <- allocate_remaining_leveling_seats(
+    district_votes = district_votes,
+    leveling_seats_needed = leveling_seats_needed,
+    total_leveling_seats = total_leveling_seats
+  )
+  
+  cat("\n--- End Debugging: allocate_leveling_seats ---\n")
+  return(leveling_seat_allocations)
+}
+
+# Helper: Calculate Actual District Seats
+calculate_actual_district_seats <- function(district_votes, district_seats, eligible_parties) {
+  Reduce("+", lapply(names(district_votes), function(region) {
+    allocation <- allocate_seats(district_votes[[region]][eligible_parties], district_seats[region])
+    seats_per_party <- setNames(allocation$Seats, allocation$Party)
+    sapply(eligible_parties, function(p) seats_per_party[p] %||% 0)
   }))
-  
-  # Align actual district seats with national votes
-  actual_district_seats <- setNames(actual_district_seats, names(national_votes))
-  actual_district_seats[is.na(actual_district_seats)] <- 0
-  
-  # Calculate leveling seats needed
-  leveling_seats_needed <- pmax(
-    national_seat_allocation$Seats - actual_district_seats[names(national_seat_allocation$Party)], 0
-  )
-  names(leveling_seats_needed) <- national_seat_allocation$Party
-  
-  # Track district allocations
-  district_leveling_seats <- setNames(rep(0, length(district_votes)), names(district_votes))
-  
-  # Assign leveling seats across districts
-  leveling_seat_allocations <- data.frame(
-    Region = character(), Party = character(), Quotient = numeric(), stringsAsFactors = FALSE
-  )
+}
+
+# Helper: Calculate Leveling Seats Needed
+calculate_leveling_seats_needed <- function(national_seat_allocation, actual_district_seats) {
+  leveling_seats_needed <- pmax(national_seat_allocation$Seats - actual_district_seats, 0)
+  leveling_seats_needed[leveling_seats_needed > 0]
+}
+
+# Helper: Allocate Remaining Leveling Seats
+allocate_remaining_leveling_seats <- function(district_votes, leveling_seats_needed, total_leveling_seats) {
+  leveling_seat_allocations <- data.frame(Region = character(), Party = character(), Quotient = numeric(), stringsAsFactors = FALSE)
+  district_leveling_count <- setNames(rep(0, length(district_votes)), names(district_votes))
   
   for (i in seq_len(total_leveling_seats)) {
-    fractions <- sapply(names(district_votes), function(region) {
-      if (district_leveling_seats[region] >= 1) return(rep(0, length(leveling_seats_needed)))  # Max 1 seat per district
-      
-      sapply(names(leveling_seats_needed), function(party) {
-        if (leveling_seats_needed[party] > 0 && party != "Andre") {
-          votes <- district_votes[[region]][party]
-          divisor <- 1.4 + sum(leveling_seat_allocations$Region == region & leveling_seat_allocations$Party == party) * 2
-          if (!is.na(votes)) (votes / divisor) * district_seats[region] else 0
-        } else {
-          0
-        }
-      })
-    })
+    # Calculate quotients for all districts and eligible parties
+    fractions <- calculate_fractions(district_votes, leveling_seats_needed, leveling_seat_allocations)
     
-    # Flatten fractions to a numeric vector
-    fractions <- unlist(fractions)
-    if (length(fractions) == 0 || all(fractions == 0)) break
+    if (length(fractions) == 0 || max(fractions) == 0) break
     
     max_index <- which.max(fractions)
     region <- names(district_votes)[ceiling(max_index / length(leveling_seats_needed))]
     party <- names(leveling_seats_needed)[(max_index - 1) %% length(leveling_seats_needed) + 1]
-    quotient <- max(fractions, na.rm = TRUE)
+    quotient <- fractions[max_index]
     
-    # Allocate a leveling seat
+    # Allocate the leveling seat
     leveling_seat_allocations <- rbind(
       leveling_seat_allocations,
       data.frame(Region = region, Party = party, Quotient = quotient, stringsAsFactors = FALSE)
     )
-    
-    # Update constraints
+    district_leveling_count[region] <- district_leveling_count[region] + 1
     leveling_seats_needed[party] <- leveling_seats_needed[party] - 1
-    district_leveling_seats[region] <- district_leveling_seats[region] + 1
+    if (leveling_seats_needed[party] <= 0) {
+      leveling_seats_needed <- leveling_seats_needed[leveling_seats_needed > 0]
+    }
+    
+    # Debugging: Print current allocation round
+    cat("\nAllocation Round:", i, "\n")
+    cat("Region:", region, "\n")
+    cat("Party:", party, "\n")
+    cat("Quotient:", quotient, "\n")
+    cat("Remaining Leveling Seats Needed:\n")
+    print(leveling_seats_needed)
   }
   
+  row.names(leveling_seat_allocations) <- NULL
   return(leveling_seat_allocations)
 }
 
+# Helper: Calculate Fractions for Leveling Seat Allocation
+calculate_fractions <- function(district_votes, leveling_seats_needed, leveling_seat_allocations) {
+  sapply(names(district_votes), function(region) {
+    sapply(names(leveling_seats_needed), function(party) {
+      if (!is.na(leveling_seats_needed[party]) && leveling_seats_needed[party] > 0) {
+        votes <- district_votes[[region]][party]
+        divisor <- 1 + sum(leveling_seat_allocations$Region == region & leveling_seat_allocations$Party == party) * 2
+        if (!is.na(votes)) votes / divisor else 0
+      } else {
+        0
+      }
+    })
+  }) %>%
+    unlist()
+}
+
 # Run Allocation
-run_tests <- function(input_file, district_file) {
-  input_data <- load_input_data(input_file)
-  district_info <- load_input_data(district_file)
+run_tests <- function(input_data, district_data, verbose = FALSE) {
+  # Validate district_data structure
+  if (!all(c("Valgdistrikt", "Mandater", "Elektorat") %in% colnames(district_data))) {
+    stop("Error: district_data must contain 'Valgdistrikt', 'Mandater', and 'Elektorat' columns.")
+  }
   
-  input_values <- prepare_input_data(input_data)
-  national_data <- input_values$national
-  district_data <- input_values$district
+  if (any(is.na(district_data$Mandater))) {
+    stop("Error: Missing values in the 'Mandater' column.")
+  }
   
-  district_votes <- split(district_data, district_data$Region) %>%
+  # Prepare data
+  input_values <- prepare_input_data(input_data, district_data)
+  district_data_processed <- input_values$district
+  
+  # Prepare votes
+  district_votes <- split(district_data_processed, district_data_processed$Region) %>%
     lapply(function(d) setNames(d$Votes, d$Parti))
   
-  district_seats <- setNames(district_info$Mandater, district_info$Valgdistrikt)
+  # Prepare seat mapping
+  district_seats <- setNames(district_data$Mandater, district_data$Valgdistrikt)
   
+  # Check for missing regions
+  missing_regions <- setdiff(names(district_votes), names(district_seats))
+  if (length(missing_regions) > 0) {
+    stop(paste("Error: Missing total_seats for the following regions:", paste(missing_regions, collapse = ", ")))
+  }
+  
+  # Allocate district seats
   district_allocations <- lapply(names(district_votes), function(region) {
-    allocate_seats(district_votes[[region]], district_seats[[region]])
+    allocate_seats(district_votes[[region]], district_seats[region])
   })
   names(district_allocations) <- names(district_votes)
   
-  national_votes <- setNames(national_data$Votes, national_data$Parti)
+  # Calculate actual district seats
+  actual_district_seats <- Reduce("+", lapply(district_allocations, function(allocation) {
+    result <- setNames(allocation$Seats, allocation$Party)
+    all_parties <- unique(district_data_processed$Parti)
+    sapply(all_parties, function(p) result[p] %||% 0)
+  }))
   
+  # Prepare national votes
+  national_votes <- setNames(
+    aggregate(Votes ~ Parti, data = district_data_processed, sum)$Votes,
+    aggregate(Votes ~ Parti, data = district_data_processed, sum)$Parti
+  )
+  
+  # Exclude parties under 4% national threshold
+  total_votes <- sum(national_votes)
+  eligible_parties <- names(national_votes[national_votes / total_votes >= 0.04])
+  national_votes <- national_votes[eligible_parties]
+  
+  if (length(eligible_parties) == 0) {
+    stop("Error: No parties above the 4% national threshold.")
+  }
+  
+  # Allocate leveling seats
   leveling_seats <- allocate_leveling_seats(
     district_votes = district_votes,
     national_votes = national_votes,
@@ -164,16 +247,19 @@ run_tests <- function(input_file, district_file) {
     total_leveling_seats = 19
   )
   
+  # Debugging outputs
+  if (verbose) {
+    cat("District Allocations:\n")
+    print(district_allocations)
+    cat("Actual District Seats:\n")
+    print(actual_district_seats)
+    cat("Leveling Seats:\n")
+    print(leveling_seats)
+  }
+  
   return(list(
     DistrictAllocations = district_allocations,
+    ActualDistrictSeats = actual_district_seats,
     LevelingSeats = leveling_seats
   ))
 }
-
-# Example Usage
-input_file <- "data/utjevneren_innstillinger_test.csv"
-district_file <- "data/district_data.csv"
-
-results <- run_tests(input_file, district_file)
-
-print(results$LevelingSeats)
